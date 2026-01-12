@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MuGöl İmsak Vakti</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- İkonlar ve Fontlar -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- RESET & VARIABLES --- */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
+        
+        :root {
+            --bg-main: #020617;
+            --bg-gradient: radial-gradient(circle at top center, #1e293b 0%, #020617 80%);
+            
+            --gold: #fbbf24;
+            --blue: #38bdf8;
+            --green: #10b981;
+            --red: #ef4444;
+
+            --card-bg: rgba(15, 23, 42, 0.75);
+            --border: rgba(255, 255, 255, 0.08);
+            
+            --text-white: #ffffff;
+            --text-gray: #94a3b8;
+        }
+
+        /* --- ANA YAPI --- */
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-main);
+            background-image: var(--bg-gradient);
+            color: var(--text-white);
+            min-height: 100vh;
+            display: flex; justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%; max-width: 480px;
+            padding: 20px; padding-bottom: 100px;
+            display: flex; flex-direction: column;
+            gap: 18px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- HEADER --- */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+        .h-left { display: flex; align-items: center; gap: 12px; }
+        .logo { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--gold); }
+        .app-title { font-weight: 700; font-size: 1.1rem; }
+        .app-date { font-size: 0.75rem; color: var(--text-gray); }
+
+        .btn-icon {
+            width: 40px; height: 40px; border-radius: 50%; border: none;
+            background: rgba(255,255,255,0.05); color: #fff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 1rem;
+            transition: 0.3s;
+        }
+        .notify-active { 
+            color: var(--blue); border: 1px solid var(--blue); 
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(56,189,248,0.4); } 70% { box-shadow: 0 0 0 10px rgba(56,189,248,0); } 100% { box-shadow: 0 0 0 0 rgba(56,189,248,0); } }
+
+        /* --- ESMA KARTI --- */
+        .esma-card {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), transparent);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 24px;
+            padding: 20px; text-align: center;
+        }
+        .esma-ar { font-family: 'Amiri', serif; font-size: 2.4rem; color: var(--gold); margin-bottom: 2px; text-shadow: 0 0 15px rgba(251,191,36,0.3); }
+        .esma-tr { font-weight: 700; font-size: 1.1rem; letter-spacing: 1px; }
+        .esma-desc { font-size: 0.85rem; color: var(--text-gray); font-style: italic; margin-top: 5px; }
+
+        /* --- SAYAÇ (YENİ TASARIM) --- */
+        .timer-card {
+            position: relative;
+            /* RESİM BURAYA EKLENİYOR */
+            background-image: url('cerceve.png'); /* Bu resmi yerel klasöre koyun veya URL kullanın */
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent; /* Arka plan rengini kapat */
+            
+            border: none; /* Kenarlık kaldırıldı çünkü resimde var */
+            border-radius: 0;
+            box-shadow: none; /* Gölgeyi kaldırdık, resim ön planda olsun */
+            
+            /* İçeriği merkeze oturtmak için padding artırıldı */
+            padding: 70px 40px; 
+            text-align: center;
+            overflow: visible;
+            
+            /* Kare görünüm için oran (Mobilde düzgün durması için) */
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Resim kullanılamazsa yedek arka plan */
+        .timer-card:empty {
+             background: var(--card-bg); border: 1px solid var(--border); border-radius: 32px;
+        }
+
+        /* Üstteki mavi çizgiyi kaldırdık çünkü resimle uymaz */
+        .timer-card::before { display: none; }
+
+        /* YAZI RENKLERİNİ KOYULAŞTIRMA (Beyaz zemin için) */
+        .timer-lbl { 
+            font-size: 0.85rem; 
+            color: #64748b; /* Koyu Gri */
+            letter-spacing: 3px; 
+            font-weight: 700; 
+            margin-bottom: 5px; 
+            text-transform: uppercase;
+        }
+        
+        .timer-next { 
+            font-size: 2.4rem; 
+            font-weight: 800; 
+            color: #0f172a; /* Lacivert/Siyah */
+            margin-bottom: 0px; 
+            text-shadow: none;
+        }
+        
+        .timer-val { 
+            font-size: 3.8rem; 
+            font-weight: 700; 
+            line-height: 1.1; 
+            letter-spacing: -2px;
+            /* Koyu renk gradient */
+            background: linear-gradient(180deg, #0f172a, #475569); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        
+        .timer-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 18px; border-radius: 50px;
+            background: rgba(15, 23, 42, 0.8); /* Arkaplanı koyu yaptık */
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--blue); font-size: 0.85rem; font-weight: 600;
+        }
+
+        /* Kerahat durumunda renkler */
+        .timer-card.kerahat .timer-val { 
+            background: linear-gradient(180deg, #ef4444, #991b1b); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+        .timer-card.kerahat .timer-badge { 
+            color: #ffcccc; border-color: var(--red); background: rgba(239, 68, 68, 0.9); 
+        }
+
+        /* --- VAKİTLER --- */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .v-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 18px; padding: 15px 5px; text-align: center;
+            transition: 0.3s;
+        }
+        .v-box.active {
+            background: rgba(251, 191, 36, 0.15); border-color: var(--gold);
+            transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .v-name { font-size: 0.75rem; color: var(--text-gray); font-weight: 600; text-transform: uppercase; margin-bottom: 5px; }
+        .v-time { font-size: 1.3rem; font-weight: 600; color: #fff; }
+        .active .v-time { color: var(--gold); font-weight: 800; }
+
+        /* --- SLIDER --- */
+        .slider-title { font-size: 0.8rem; font-weight: 700; color: var(--text-gray); margin-left: 5px; margin-bottom: 10px; }
+        .slider { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .slider::-webkit-scrollbar { display: none; }
+        .day-card {
+            min-width: 130px; background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 18px; padding: 15px; text-align: center; flex-shrink: 0;
+        }
+        .day-card.today { border-color: var(--gold); background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), transparent); }
+        .dc-name { font-size: 0.75rem; color: var(--text-gray); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .dc-num { font-size: 1.8rem; font-weight: 700; color: #fff; line-height: 1; }
+        .day-card.today .dc-num { color: var(--gold); }
+        .dc-date { font-size: 0.7rem; color: var(--blue); border-top: 1px solid var(--border); padding-top: 5px; margin-top: 5px; font-weight: 600; }
+
+        /* --- BUTTONS & CONTROLS --- */
+        .btn-full {
+            width: 100%; padding: 16px; border: none; border-radius: 18px;
+            background: linear-gradient(135deg, var(--blue), #0284c7);
+            color: #fff; font-size: 1rem; font-weight: 700;
+            box-shadow: 0 5px 15px rgba(56, 189, 248, 0.3);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-full:active { transform: scale(0.98); opacity: 0.9; }
+        
+        select {
+            width: 100%; padding: 16px; border-radius: 18px;
+            background: var(--card-bg); border: 1px solid var(--border);
+            color: #fff; font-size: 1rem; font-weight: 600; text-align: center; appearance: none;
+        }
+
+        /* --- ACCORDION --- */
+        .acc { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; margin-bottom: 10px; }
+        .acc-head {
+            width: 100%; padding: 18px 20px; background: transparent; border: none;
+            display: flex; justify-content: space-between; align-items: center;
+            color: #fff; font-weight: 600; font-size: 0.95rem; cursor: pointer;
+        }
+        .acc-body { max-height: 0; overflow: hidden; transition: 0.3s; background: rgba(0,0,0,0.2); }
+        .acc-body.open { max-height: 1000px; padding: 20px; border-top: 1px solid var(--border); }
+        .acc-head i { transition: 0.3s; color: var(--text-gray); }
+        .acc-head.active i { transform: rotate(180deg); color: var(--gold); }
+
+        /* --- ZİKİRMATİK BUTONLARI --- */
+        .z-inp { width: 100%; padding: 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px; color: #fff; }
+        
+        .z-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: rgba(255,255,255,0.03); padding: 12px 16px; 
+            border-radius: 16px; margin-bottom: 10px; border: 1px solid var(--border); 
+        }
+        
+        .zb { 
+            width: 36px; height: 36px; border-radius: 10px; border:none; 
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
+            transition: all 0.2s ease;
+        }
+        .zb:active { transform: scale(0.9); }
+        .zb-del { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .zb-reset { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+        .zb-inc { background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+        .zb-add { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0 20px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+
+        /* --- KAZA & TEST --- */
+        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .tool-btn {
+            padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            border-radius: 14px; color: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 0.8rem;
+        }
+        .tool-btn:active { background: var(--blue); border-color: var(--blue); }
+        .tool-btn i { font-size: 1.2rem; color: var(--blue); }
+        .tool-btn:active i { color: #fff; }
+
+        /* --- MODAL & PWA --- */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-con { width: 90%; max-width: 500px; height: 80vh; background: #0f172a; border: 1px solid var(--border); border-radius: 24px; padding: 20px; display: flex; flex-direction: column; }
+        .t-scroll { flex: 1; overflow-y: auto; margin-top: 15px; border: 1px solid var(--border); border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th { position: sticky; top: 0; background: #1e293b; padding: 12px 5px; color: var(--blue); }
+        td { padding: 10px 5px; border-bottom: 1px solid var(--border); text-align: center; color: #fff; }
+        tr.active-day { background: rgba(56, 189, 248, 0.15); color: var(--blue); font-weight: 700; }
+
+        .pwa { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #1e293b; border: 1px solid var(--border); padding: 15px; border-radius: 18px; display: none; align-items: center; justify-content: space-between; z-index: 3000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        #loader { text-align: center; display: none; color: var(--text-gray); margin: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- SESLER -->
+    <audio id="silentAudio" loop><source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//oeAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////////////////////////////////////wAAADFMYXZjNTguNTQAAAAAAAAAAAAAAAAAAAAAAJAAAAAAAAAAASAAxN1CqwAAAAAAAAAAAAAAAAAAAAAA//oeZAAAAABzAAAAEAAABIABAAAAAAAAAABhAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA//oeZAAAAABzAAAAEAAABIABAAAAAAAAAABhAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA//oeZAAAAABzAAAAEAAABIABAAAAAAAAAABhAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA//oeZAAAAABzAAAAEAAABIABAAAAAAAAAABhAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA//oeZAAAAABzAAAAEAAABIABAAAAAAAAAABhAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAA" type="audio/mpeg"></audio>
+    <audio id="adhanAudio" src="https://www.islamcan.com/audio/adhan/azan2.mp3"></audio>
+    <audio id="kerahatAudio" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="h-left">
+                <img src="logo.png" alt="Logo" class="logo">
+                <div>
+                    <div class="app-title">MuGöl İmsak Vakti</div>
+                    <div id="dateText" class="app-date">...</div>
+                </div>
+            </div>
+            <div style="display:flex; gap:8px">
+                <button class="btn-icon" id="notifyBtn" onclick="enablePersistentMode()" title="Bildirimleri Aç"><i class="fas fa-bell"></i></button>
+                <button class="btn-icon" onclick="shareApp()"><i class="fas fa-share-nodes"></i></button>
+            </div>
+        </header>
+
+        <!-- ESMA -->
+        <div class="esma-card">
+            <div class="esma-ar" id="esmaAr">...</div>
+            <div class="esma-tr" id="esmaTr">...</div>
+            <div class="esma-desc" id="esmaDesc">...</div>
+        </div>
+
+        <!-- SLIDER -->
+        <div>
+            <div class="slider-title"><i class="fas fa-star" style="color:var(--gold)"></i> YAKLAŞAN GÜNLER</div>
+            <div class="slider" id="daysSlider"></div>
+        </div>
+
+        <!-- TIMER HERO (YENİ GÖRÜNÜM) -->
+        <div class="timer-card" id="mainTimerCard">
+            <!-- Arka plan resmi CSS'de ayarlandı -->
+            <div class="timer-lbl">SONRAKİ VAKİT</div>
+            <div class="timer-next" id="nextName">...</div>
+            <div class="timer-val" id="counter">00:00:00</div>
+            <div class="timer-badge" id="infoBadge"><i class="fas fa-spinner fa-spin"></i></div>
+        </div>
+
+        <!-- VAKITLER -->
+        <div class="grid">
+            <div class="v-box" id="box-Imsak"><div class="v-name">İmsak</div><div class="v-time" id="t-Imsak">--:--</div></div>
+            <div class="v-box" id="box-Sunrise"><div class="v-name">Güneş</div><div class="v-time" id="t-Sunrise">--:--</div></div>
+            <div class="v-box" id="box-Dhuhr"><div class="v-name">Öğle</div><div class="v-time" id="t-Dhuhr">--:--</div></div>
+            <div class="v-box" id="box-Asr"><div class="v-name">İkindi</div><div class="v-time" id="t-Asr">--:--</div></div>
+            <div class="v-box" id="box-Maghrib"><div class="v-name">Akşam</div><div class="v-time" id="t-Maghrib">--:--</div></div>
+            <div class="v-box" id="box-Isha"><div class="v-name">Yatsı</div><div class="v-time" id="t-Isha">--:--</div></div>
+        </div>
+
+        <!-- CONTROLS -->
+        <select id="citySelect"><option>Yükleniyor...</option></select>
+        <button class="btn-full" onclick="openModal()"><i class="fas fa-calendar-days"></i> Aylık İmsakiye</button>
+        <div id="loader"><i class="fas fa-circle-notch fa-spin"></i> Güncelleniyor...</div>
+
+        <!-- AYARLAR -->
+        <div class="acc">
+            <button class="acc-head" onclick="toggleAcc(this)">
+                <span><i class="fas fa-sliders" style="margin-right:8px; color:var(--blue)"></i> Ayarlar & Test</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="acc-body">
+                <div class="tool-grid">
+                    <button class="tool-btn" onclick="testNotification()"><i class="fas fa-bell"></i> Bildirim Test</button>
+                    <button class="tool-btn" onclick="testAdhan()"><i class="fas fa-mosque"></i> Ezan Test</button>
+                    <button class="tool-btn" onclick="testKerahat()"><i class="fas fa-triangle-exclamation"></i> Kerahat Test</button>
+                    <button class="tool-btn" style="background:rgba(239,68,68,0.1)" onclick="stopAudio()"><i class="fas fa-stop" style="color:#ef4444"></i> Durdur</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- KAZA -->
+        <div class="acc">
+            <button class="acc-head" onclick="toggleAcc(this)">
+                <span><i class="fas fa-clipboard-check" style="margin-right:8px; color:var(--gold)"></i> Kaza Takip</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="acc-body">
+                <div class="tool-grid" id="kazaGrid"></div>
+                <button class="btn-full" style="margin-top:15px; background:rgba(239,68,68,0.15); color:#ef4444; box-shadow:none;" onclick="resetAllKaza()">Sıfırla</button>
+            </div>
+        </div>
+
+        <!-- ZIKIR -->
+        <div class="acc">
+            <button class="acc-head" onclick="toggleAcc(this)">
+                <span><i class="fas fa-fingerprint" style="margin-right:8px; color:#10b981"></i> Zikirmatik</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="acc-body">
+                <div style="display:flex; gap:10px; margin-bottom:10px">
+                    <input type="text" id="newZikirName" class="z-inp" style="margin:0" placeholder="İsim...">
+                    <button class="zb-add" onclick="addNewZikir()">Ekle</button>
+                </div>
+                <div id="zikirList"></div>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:30px; opacity:0.5; font-size:0.75rem; letter-spacing:2px">MUGÖL VAKİT 2025</div>
+    </div>
+
+    <!-- PWA -->
+    <div class="pwa" id="installBanner">
+        <div style="display:flex; gap:12px; align-items:center">
+            <img src="icon-192.png" alt="Icon" width="44" style="border-radius:12px" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3029/3029994.png'">
+            <div><div style="font-weight:700">Yükle</div><div style="font-size:0.8rem; opacity:0.7">Hızlı erişim</div></div>
+        </div>
+        <button class="btn-icon" style="width:auto; padding:0 15px; border-radius:50px; background:#fff; color:#000" onclick="installPWA()">Kur</button>
+    </div>
+
+    <!-- MODAL -->
+    <div id="imsakiyeModal" class="modal">
+        <div class="modal-con">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <h3>Aylık İmsakiye</h3>
+                <i class="fas fa-times" style="cursor:pointer; font-size:1.5rem" onclick="closeModal()"></i>
+            </div>
+            <div class="t-scroll">
+                <table id="monthlyTable"><thead><tr><th>Gün</th><th>İmsak</th><th>Güneş</th><th>Öğle</th><th>İkindi</th><th>Akşam</th><th>Yatsı</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- VERİLER VE AYARLAR --- */
+        const cities = [
+            {c:"Adana",n:"Adana"}, {c:"Adiyaman",n:"Adıyaman"}, {c:"Afyon",n:"Afyon"}, {c:"Agri",n:"Ağrı"},
+            {c:"Amasya",n:"Amasya"}, {c:"Ankara",n:"Ankara"}, {c:"Antalya",n:"Antalya"}, {c:"Artvin",n:"Artvin"},
+            {c:"Aydin",n:"Aydın"}, {c:"Balikesir",n:"Balıkesir"}, {c:"Bilecik",n:"Bilecik"}, {c:"Bingol",n:"Bingöl"},
+            {c:"Bitlis",n:"Bitlis"}, {c:"Bolu",n:"Bolu"}, {c:"Burdur",n:"Burdur"}, {c:"Bursa",n:"Bursa"},
+            {c:"Canakkale",n:"Çanakkale"}, {c:"Cankiri",n:"Çankırı"}, {c:"Corum",n:"Çorum"}, {c:"Denizli",n:"Denizli"},
+            {c:"Diyarbakir",n:"Diyarbakır"}, {c:"Edirne",n:"Edirne"}, {c:"Elazig",n:"Elazığ"}, {c:"Erzincan",n:"Erzincan"},
+            {c:"Erzurum",n:"Erzurum"}, {c:"Eskisehir",n:"Eskişehir"}, {c:"Gaziantep",n:"Gaziantep"}, {c:"Giresun",n:"Giresun"},
+            {c:"Gumushane",n:"Gümüşhane"}, {c:"Hakkari",n:"Hakkari"}, {c:"Hatay",n:"Hatay"}, {c:"Isparta",n:"Isparta"},
+            {c:"Mersin",n:"Mersin"}, {c:"Istanbul",n:"İstanbul"}, {c:"Izmir",n:"İzmir"}, {c:"Kars",n:"Kars"},
+            {c:"Kastamonu",n:"Kastamonu"}, {c:"Kayseri",n:"Kayseri"}, {c:"Kirklareli",n:"Kırklareli"}, {c:"Kirsehir",n:"Kırşehir"},
+            {c:"Kocaeli",n:"Kocaeli"}, {c:"Konya",n:"Konya"}, {c:"Kutahya",n:"Kütahya"}, {c:"Malatya",n:"Malatya"},
+            {c:"Manisa",n:"Manisa"}, {c:"Maras",n:"K.Maraş"}, {c:"Mardin",n:"Mardin"}, {c:"Mugla",n:"Mugla"},
+            {c:"Mus",n:"Muş"}, {c:"Nevsehir",n:"Nevşehir"}, {c:"Nigde",n:"Niğde"}, {c:"Ordu",n:"Ordu"},
+            {c:"Rize",n:"Rize"}, {c:"Sakarya",n:"Sakarya"}, {c:"Samsun",n:"Samsun"}, {c:"Siirt",n:"Siirt"},
+            {c:"Sinop",n:"Sinop"}, {c:"Sivas",n:"Sivas"}, {c:"Tekirdag",n:"Tekirdağ"}, {c:"Tokat",n:"Tokat"},
+            {c:"Trabzon",n:"Trabzon"}, {c:"Tunceli",n:"Tunceli"}, {c:"Sanliurfa",n:"Şanlıurfa"}, {c:"Usak",n:"Uşak"},
+            {c:"Van",n:"Van"}, {c:"Yozgat",n:"Yozgat"}, {c:"Zonguldak",n:"Zonguldak"}, {c:"Aksaray",n:"Aksaray"},
+            {c:"Bayburt",n:"Bayburt"}, {c:"Karaman",n:"Karaman"}, {c:"Kirikkale",n:"Kırıkkale"}, {c:"Batman",n:"Batman"},
+            {c:"Sirnak",n:"Şırnak"}, {c:"Bartin",n:"Bartın"}, {c:"Ardahan",n:"Ardahan"}, {c:"Igdir",n:"Iğdır"},
+            {c:"Yalova",n:"Yalova"}, {c:"Karabuk",n:"Karabük"}, {c:"Kilis",n:"Kilis"}, {c:"Osmaniye",n:"Osmaniye"},
+            {c:"Duzce",n:"Düzce"}
+        ];
+
+        const religiousEvents = [
+            { name: "Miraç Kandili", date: "2026-01-15" }, { name: "Berat Kandili", date: "2026-02-02" },
+            { name: "Ramazan Başlangıcı", date: "2026-02-19" }, { name: "Kadir Gecesi", date: "2026-03-16" },
+            { name: "Ramazan Bayramı", date: "2026-03-19" }, { name: "Kurban Bayramı", date: "2026-05-27" },
+            { name: "Aşure Günü", date: "2026-06-25" }, { name: "Mevlid Kandili", date: "2026-08-26" }
+        ];
+
+        const esmaList = [
+            {ar:"الله", tr:"Allah", m:"Eşi benzeri olmayan tek ilah."},
+            {ar:"الرَّحْمَن", tr:"Er-Rahman", m:"Bütün mahlükata merhamet eden."},
+            {ar:"الْمَلِك", tr:"El-Melik", m:"Mülkün gerçek sahibi."},
+            {ar:"الْقُدُّوس", tr:"El-Kuddüs", m:"Her türlü eksiklikten münezzeh."},
+            {ar:"السَّلاَم", tr:"Es-Selam", m:"Selamete çıkaran."},
+            {ar:"الْعَزِيز", tr:"El-Aziz", m:"İzzet sahibi, her şeye galip."}
+        ];
+
+        let timerInt = null;
+        let monthlyDataCache = null;
+        let zikirList = JSON.parse(localStorage.getItem('zikirList')) || [{ id: 1, name: "Sübhanallah", count: 0 }];
+        let kazaData = JSON.parse(localStorage.getItem('kazaData')) || { sabah:0, ogle:0, ikindi:0, aksam:0, yats:0, vitir:0 };
+        const kazaNames = { sabah:"Sabah", ogle:"Öğle", ikindi:"İkindi", aksam:"Akşam", yats:"Yatsı", vitir:"Vitir" };
+        
+        let isPersistentActive = false;
+        let lastPlayedTime = ""; 
+        let lastKerahatStatus = false;
+        let wakeLock = null;
+
+        /* --- BAŞLANGIÇ --- */
+        window.onload = () => {
+            if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(console.error);
+
+            const d = new Date();
+            document.getElementById('dateText').innerText = d.toLocaleDateString('tr-TR', {day:'numeric', month:'long', weekday:'long'});
+            
+            const randEsma = esmaList[Math.floor(Math.random() * esmaList.length)];
+            document.getElementById('esmaAr').innerText = randEsma.ar;
+            document.getElementById('esmaTr').innerText = randEsma.tr;
+            document.getElementById('esmaDesc').innerText = randEsma.m;
+
+            const sel = document.getElementById('citySelect');
+            sel.innerHTML = "";
+            cities.sort((a,b)=>a.n.localeCompare(b.n,'tr'));
+            cities.forEach(x => { let op = document.createElement('option'); op.value = x.c; op.text = x.n; sel.add(op); });
+
+            const saved = localStorage.getItem('mugolCity') || "Istanbul";
+            sel.value = saved;
+            sel.onchange = () => { localStorage.setItem('mugolCity', sel.value); getData(sel.value); }
+
+            renderEvents(); renderZikirs(); renderKaza(); getData(saved);
+
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                document.getElementById('notifyBtn').classList.add('notify-active');
+            }
+        };
+
+        /* --- ANA MANTIK --- */
+        async function getData(city) { 
+            const ldr = document.getElementById('loader'); ldr.style.display = 'block'; 
+            try { 
+                let d = new Date(); 
+                let res = await fetch(`https://api.aladhan.com/v1/calendarByCity?city=${city}&country=Turkey&method=13&month=${d.getMonth()+1}&year=${d.getFullYear()}`); 
+                let json = await res.json(); 
+                if(json.code===200) { 
+                    monthlyDataCache = json.data; 
+                    let todayData = json.data[d.getDate()-1].timings; 
+                    updateView(todayData); 
+                } 
+            } catch(e) { console.error(e); } 
+            finally { ldr.style.display = 'none'; } 
+        }
+
+        function updateView(t) { 
+            const cln = (s) => s.split(' ')[0]; 
+            document.getElementById('t-Imsak').innerText = cln(t.Imsak); 
+            document.getElementById('t-Sunrise').innerText = cln(t.Sunrise); 
+            document.getElementById('t-Dhuhr').innerText = cln(t.Dhuhr); 
+            document.getElementById('t-Asr').innerText = cln(t.Asr); 
+            document.getElementById('t-Maghrib').innerText = cln(t.Maghrib); 
+            document.getElementById('t-Isha').innerText = cln(t.Isha); 
+            startTimer(t); 
+        }
+
+        function startTimer(t) {
+            if(timerInt) clearInterval(timerInt);
+            const times = {'Imsak':t.Imsak, 'Sunrise':t.Sunrise, 'Dhuhr':t.Dhuhr, 'Asr':t.Asr, 'Maghrib':t.Maghrib, 'Isha':t.Isha};
+            const tr = {'Imsak':'İmsak','Sunrise':'Güneş','Dhuhr':'Öğle','Asr':'İkindi','Maghrib':'Akşam','Isha':'Yatsı'};
+            
+            function tick() {
+                let now = new Date(); let target = null, name = ""; let min = Infinity; let nextTimeStr = "";
+                
+                let currentTimeStr = now.toTimeString().split(' ')[0].substr(0, 5);
+                if (now.getSeconds() < 2 && currentTimeStr !== lastPlayedTime) {
+                    for (let key in times) {
+                        if (times[key].startsWith(currentTimeStr)) {
+                            triggerAlarm(tr[key]);
+                            lastPlayedTime = currentTimeStr;
+                        }
+                    }
+                }
+
+                for(let k in times) { 
+                    let [h,m] = times[k].split(' ')[0].split(':'); 
+                    let d = new Date(); d.setHours(h,m,0,0); 
+                    let diff = d - now; 
+                    if(diff > 0 && diff < min) { min = diff; target = d; name = k; nextTimeStr = times[k].split(' ')[0]; } 
+                }
+                if(!target) { 
+                    let [h,m] = times['Imsak'].split(' ')[0].split(':'); 
+                    target = new Date(); target.setDate(target.getDate()+1); target.setHours(h,m,0,0); 
+                    name = 'Imsak'; nextTimeStr = times['Imsak'].split(' ')[0]; 
+                }
+                
+                const nextVakitTR = tr[name];
+                document.getElementById('nextName').innerText = nextVakitTR;
+                
+                document.querySelectorAll('.v-box').forEach(x=>x.classList.remove('active'));
+                let ab = document.getElementById('box-'+name); if(ab) ab.classList.add('active');
+
+                const badge = document.getElementById('infoBadge');
+                const mainCard = document.getElementById('mainTimerCard');
+                let isKerahat = false;
+                
+                let checkKerahat = (vakitName, range) => { 
+                    let [vh, vm] = times[vakitName].split(':'); 
+                    let vt = new Date(); vt.setHours(vh,vm,0,0); 
+                    if(vakitName === 'Sunrise') { let diff = (now - vt) / 60000; return (diff > 0 && diff < range); } 
+                    else { let rem = (vt - now) / 60000; return (rem > 0 && rem < range); }
+                };
+                
+                if(checkKerahat('Sunrise', 45) || checkKerahat('Dhuhr', 45) || checkKerahat('Maghrib', 45)) { 
+                    isKerahat = true; 
+                    badge.innerHTML = '<i class="fas fa-triangle-exclamation"></i> KERAHAT'; 
+                    mainCard.classList.add('kerahat');
+                    if (!lastKerahatStatus) { triggerKerahatAlarm(); lastKerahatStatus = true; }
+                } else { 
+                    badge.innerHTML = `<i class="fas fa-clock"></i> Ezan: ${nextTimeStr}`; 
+                    mainCard.classList.remove('kerahat');
+                    lastKerahatStatus = false;
+                }
+
+                let rem = target - now; 
+                let h = Math.floor(rem/3600000); 
+                let m = Math.floor((rem%3600000)/60000); 
+                let s = Math.floor((rem%60000)/1000);
+                const countdownStr = `${h<10?'0'+h:h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+                document.getElementById('counter').innerText = countdownStr;
+
+                if (isPersistentActive && 'mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: isKerahat ? "⚠️ KERAHAT VAKTİ" : `${nextVakitTR} Vaktine`,
+                        artist: countdownStr,
+                        artwork: [{ src: 'icon-512.png', sizes: '512x512', type: 'image/png' }]
+                    });
+                }
+            }
+            tick(); timerInt = setInterval(tick, 1000);
+        }
+
+        /* --- NOTIFICATION --- */
+        async function enablePersistentMode() {
+            const btn = document.getElementById('notifyBtn');
+            const silent = document.getElementById('silentAudio');
+            
+            if (Notification.permission !== "granted") await Notification.requestPermission();
+
+            try {
+                await silent.play();
+                isPersistentActive = true;
+                btn.classList.remove('notify-active');
+                btn.style.color = "#38bdf8"; 
+
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.setActionHandler('play', function() {});
+                    navigator.mediaSession.setActionHandler('pause', function() {});
+                }
+                
+                const adhan = document.getElementById('adhanAudio');
+                const kerahat = document.getElementById('kerahatAudio');
+                adhan.volume = 0; adhan.play().then(() => { adhan.pause(); adhan.currentTime=0; adhan.volume=1; });
+                kerahat.volume = 0; kerahat.play().then(() => { kerahat.pause(); kerahat.currentTime=0; kerahat.volume=1; });
+
+                if ('wakeLock' in navigator) {
+                    try { wakeLock = await navigator.wakeLock.request('screen'); } catch(err) { console.log(err); }
+                }
+                alert("Bildirimler Aktif!");
+            } catch(e) { alert("Lütfen ekrana dokunun."); }
+        }
+
+        function triggerAlarm(vakitIsmi) {
+            const audio = document.getElementById('adhanAudio');
+            audio.currentTime = 0; audio.play().catch(console.error);
+            if (Notification.permission === "granted") {
+                new Notification("🕌 MuGöl Vakit", { body: `${vakitIsmi} Vakti Girdi!`, icon: "icon-192.png", badge: "icon-192.png", vibrate: [200, 100, 200], requireInteraction: true });
+            }
+        }
+
+        function triggerKerahatAlarm() {
+            const audio = document.getElementById('kerahatAudio');
+            audio.currentTime = 0; audio.play().catch(console.error);
+            if (Notification.permission === "granted") {
+                new Notification("⚠️ KERAHAT VAKTİ!", { body: "Namaz kılmak mekruhtur.", icon: "icon-192.png", badge: "icon-192.png", vibrate: [300, 100, 300], requireInteraction: true });
+            }
+        }
+
+        /* --- UI HELPERS --- */
+        function toggleAcc(btn) {
+            const content = btn.nextElementSibling;
+            const icon = btn.querySelector('.fa-chevron-down');
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('open');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function shareApp() {
+            const cityName = document.getElementById('citySelect').options[document.getElementById('citySelect').selectedIndex].text;
+            const imsak = document.getElementById('t-Imsak').innerText;
+            const text = `MuGöl İmsak Vakti\n📍 ${cityName}\n🌑 İmsak: ${imsak}\n`;
+            if (navigator.share) navigator.share({ title: 'MuGöl', text: text }).catch(console.error);
+            else { navigator.clipboard.writeText(text); alert("Kopyalandı!"); }
+        }
+
+        function renderEvents() { 
+            const box = document.getElementById('daysSlider'); 
+            const now = new Date(); now.setHours(0,0,0,0); 
+            religiousEvents.forEach(e => { 
+                let t = new Date(e.date); t.setHours(0,0,0,0); let diff = t - now; 
+                if(diff >= 0) { 
+                    let days = Math.ceil(diff / 86400000); 
+                    let dateStr = t.toLocaleDateString('tr-TR', {day:'numeric', month:'short'}); 
+                    let div = document.createElement('div'); div.className = `day-card ${days === 0 ? 'today' : ''}`; 
+                    div.innerHTML = `<div class="dc-name">${e.name}</div><div class="dc-num">${days===0?'!':days}</div><div class="dc-date">${dateStr}</div>`; 
+                    box.appendChild(div); 
+                } 
+            }); 
+            if(box.innerHTML === "") box.innerHTML = "<div class='day-card'><div class='dc-name'>2026</div><div class='dc-num'>:)</div></div>"; 
+        }
+
+        function renderKaza() { 
+            const grid = document.getElementById('kazaGrid'); grid.innerHTML = ""; 
+            Object.keys(kazaData).forEach(key => { 
+                let div = document.createElement('div'); div.className = 'tool-btn'; 
+                div.innerHTML = `<div class="v-name">${kazaNames[key]}</div><div class="v-time" style="color:var(--gold)">${kazaData[key]}</div><div style="display:flex; gap:10px; margin-top:5px"><i class="fas fa-minus-circle" onclick="updateKaza('${key}', -1); event.stopPropagation()"></i> <i class="fas fa-plus-circle" onclick="updateKaza('${key}', 1); event.stopPropagation()"></i></div>`; 
+                grid.appendChild(div); 
+            }); 
+        }
+        function updateKaza(key, n) { if(kazaData[key]+n < 0) return; kazaData[key]+=n; localStorage.setItem('kazaData', JSON.stringify(kazaData)); renderKaza(); }
+        function resetAllKaza() { if(confirm("Sıfırlansın mı?")) { kazaData={sabah:0,ogle:0,ikindi:0,aksam:0,yats:0,vitir:0}; localStorage.setItem('kazaData',JSON.stringify(kazaData)); renderKaza(); } }
+
+        function renderZikirs() { 
+            const list = document.getElementById('zikirList'); list.innerHTML = ""; 
+            zikirList.forEach(item => { 
+                let div = document.createElement('div'); div.className = 'z-item'; 
+                div.innerHTML = `<div><div style="font-weight:600">${item.name}</div><div style="color:var(--green); font-weight:700">${item.count}</div></div><div style="display:flex; gap:8px"><button class="zb zb-reset" title="Sıfırla" onclick="upZikir(${item.id},0)"><i class="fas fa-redo"></i></button><button class="zb zb-del" title="Sil" onclick="delZikir(${item.id})"><i class="fas fa-trash"></i></button><button class="zb zb-inc" onclick="upZikir(${item.id},${item.count+1})"><i class="fas fa-plus"></i></button></div>`; 
+                list.appendChild(div); 
+            }); localStorage.setItem('zikirList', JSON.stringify(zikirList)); 
+        }
+        function addNewZikir() { const val = document.getElementById('newZikirName').value; if(val){ zikirList.push({id:Date.now(), name:val, count:0}); document.getElementById('newZikirName').value=""; renderZikirs(); } }
+        function upZikir(id, n) { const idx = zikirList.findIndex(x=>x.id===id); if(idx!==-1) { if(n>zikirList[idx].count && navigator.vibrate) navigator.vibrate(50); zikirList[idx].count=n; renderZikirs(); } }
+        function delZikir(id) { if(confirm("Silinsin mi?")) { zikirList = zikirList.filter(x=>x.id!==id); renderZikirs(); } }
+
+        function openModal() { 
+            if(!monthlyDataCache) return alert("Veri yok"); 
+            const tb = document.querySelector('#monthlyTable tbody'); tb.innerHTML = ""; 
+            const today = new Date().getDate(); const cln = (s)=>s.split(' ')[0]; 
+            monthlyDataCache.forEach(d => { 
+                let day = parseInt(d.date.gregorian.day); 
+                let tr = document.createElement('tr'); if(day===today) tr.className="active-day"; 
+                tr.innerHTML = `<td>${day}</td><td>${cln(d.timings.Imsak)}</td><td>${cln(d.timings.Sunrise)}</td><td>${cln(d.timings.Dhuhr)}</td><td>${cln(d.timings.Asr)}</td><td>${cln(d.timings.Maghrib)}</td><td>${cln(d.timings.Isha)}</td>`; 
+                tb.appendChild(tr); 
+            }); 
+            document.getElementById('imsakiyeModal').style.display = "flex"; 
+        }
+        function closeModal() { document.getElementById('imsakiyeModal').style.display = "none"; }
+        window.onclick = (e) => { if(e.target == document.getElementById('imsakiyeModal')) closeModal(); }
+
+        function testNotification() {
+            if (!("Notification" in window)) return alert("Desteklenmiyor");
+            if (Notification.permission === "granted") new Notification("✅ Test", { body: "Çalışıyor!", icon: "icon-192.png" });
+            else Notification.requestPermission();
+        }
+        function testAdhan() { const a = document.getElementById('adhanAudio'); a.currentTime=0; a.play(); }
+        function testKerahat() { const a = document.getElementById('kerahatAudio'); a.currentTime=0; a.play(); }
+        function stopAudio() { document.getElementById('adhanAudio').pause(); document.getElementById('kerahatAudio').pause(); }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; if(!localStorage.getItem('pwaDismissed')) document.getElementById('installBanner').style.display = 'flex'; });
+        async function installPWA() { 
+            if(!deferredPrompt) return alert('Zaten yüklü veya tarayıcı desteklemiyor. (iOS: Paylaş > Ana Ekrana Ekle)'); 
+            deferredPrompt.prompt(); 
+            const { outcome } = await deferredPrompt.userChoice; 
+            if(outcome === 'accepted') { document.getElementById('installBanner').style.display = 'none'; localStorage.setItem('pwaDismissed', 'true'); }
+        }
+        function dismissInstallBanner() { document.getElementById('installBanner').style.display = 'none'; localStorage.setItem('pwaDismissed', 'true'); }
+    </script>
+</body>
+</html>
