@@ -1,6 +1,6 @@
 {
   "name": "MuGöl İmsak Vakti",
-  "short_name": "İmsak Vakti",
+  "short_name": "MuGöl İmsak Vakti",
   "description": "Namaz vakitleri, ezan bildirimleri ve zikirmatik",
   "start_url": "/",
   "display": "standalone",
